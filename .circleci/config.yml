@@ -203,26 +203,26 @@ workflows:
   build-and-deploy:
     jobs:
       - prepare:
-          context: project_context
+          context: project_context_uc
       - build-frontend:
-          context: project_context
+          context: project_context_uc
           requires:
             - prepare
       - build-api:
-          context: project_context
+          context: project_context_uc
           requires:
             - prepare
       - build-mbinit:
-          context: project_context
+          context: project_context_uc
           requires:
             - prepare
       - build-backend:
-          context: project_context
+          context: project_context_uc
           requires:
             - prepare
             - build-mbinit      
       - deploy-prod:
-          context: project_context
+          context: project_context_uc
           requires:
             - build-frontend
             - build-api
