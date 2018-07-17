@@ -19,23 +19,25 @@ export class msnamecamelService {
    * Hello World sample, please remove
    */
   getHelloWorld$() {
-    return this.gateway.apollo.watchQuery<any>({
-      query: getHelloWorld,
-      fetchPolicy: 'network-only',
-    }).valueChanges;
+    return this.gateway.apollo
+      .watchQuery<any>({
+        query: getHelloWorld,
+        fetchPolicy: "network-only"
+      })
+      .valueChanges.map(
+        resp => resp.data.getHelloWorldFromEventSourcingMonitor.sn
+      );
   }
 
   /**
   * Hello World subscription sample, please remove
   */
-  getmsnamecamelHelloWorldSubscription$(): Observable<any> {
-    return Rx.Observable.merge(
-      this.gateway.apollo
-        .subscribe({
-          query: msnamecamelHelloWorldSubscription
-        })
-        .map(resp => resp.data.sn)
-    );
-  }
+ getEventSourcingMonitorHelloWorldSubscription$(): Observable<any> {
+  return this.gateway.apollo
+    .subscribe({
+      query: msnamecamelHelloWorldSubscription
+    })
+    .map(resp => resp.data.EventSourcingMonitorHelloWorldSubscription.sn);
+}
 
 }
