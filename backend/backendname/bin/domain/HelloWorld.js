@@ -4,6 +4,10 @@ const Rx = require("rxjs");
 const HelloWorldDA = require("../data/HelloWorldDA");
 const broker = require("../tools/broker/BrokerFactory")();
 const MATERIALIZED_VIEW_TOPIC = "materialized-view-updates";
+const {
+  CustomError,
+  DefaultError
+} = require("../tools/customError");
 
 /**
  * Singleton instance

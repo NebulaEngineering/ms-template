@@ -18,8 +18,8 @@ export class msnamecamelComponent implements OnInit, OnDestroy {
   helloWorldLabelSubscription$: Rx.Observable<any>;
 
   constructor(private msnamecamelervice: msnamecamelService  ) {
-    this.helloWorldLabelQuery$ = this.eventSourcingMonitorervice.getHelloWorld$();
-    this.helloWorldLabelSubscription$ = this.eventSourcingMonitorervice.getEventSourcingMonitorHelloWorldSubscription$();
+    this.helloWorldLabelQuery$ = this.msnamecamelervice.getHelloWorld$();
+    this.helloWorldLabelSubscription$ = this.msnamecamelervice.getEventSourcingMonitorHelloWorldSubscription$();
 
   }
     

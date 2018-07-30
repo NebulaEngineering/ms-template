@@ -13,7 +13,7 @@ spec:
         app: msname
     spec:      
       containers:
-      - image: nebulaeproject_context/msname.backend.backendname:0.0.58
+      - image: nebulaeproject_context/msname.backend.backendname:0.0.1
         name: backendname
         volumeMounts:
         - name: google-application-credentials

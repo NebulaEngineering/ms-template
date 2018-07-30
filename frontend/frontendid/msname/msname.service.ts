@@ -25,7 +25,7 @@ export class msnamecamelService {
         fetchPolicy: "network-only"
       })
       .valueChanges.map(
-        resp => resp.data.getHelloWorldFromEventSourcingMonitor.sn
+        resp => resp.data.getHelloWorldFrommsnamecamel.sn
       );
   }
 

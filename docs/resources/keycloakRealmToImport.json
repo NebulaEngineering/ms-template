@@ -1,6 +1,6 @@
 {
   "id": "project_context",
-  "realm": "DEV_project_context",
+  "realm": "DEV_project_context_uc",
   "notBefore": 0,
   "revokeRefreshToken": false,
   "refreshTokenMaxReuse": 1,
