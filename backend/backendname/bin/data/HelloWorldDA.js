@@ -27,7 +27,12 @@ class HelloWorldDA {
    * @param {string} type
    */
   static getHelloWorld$(evt) {    
-    return Rx.Observable.of(`{sn: Hello World ${Date.now()}}`);
+    return Rx.Observable.of(`{sn: Hello World ${Date.now()}}`)
+    .map(val => {
+      const result = {};
+      result['sn'] = val;
+      return result;
+    });
   }
 }
 

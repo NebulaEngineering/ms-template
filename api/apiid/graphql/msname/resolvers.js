@@ -4,7 +4,7 @@ const pubsub = new PubSub();
 const Rx = require("rxjs");
 const broker = require("../../broker/BrokerFactory")();
 
-function getReponseFromBackEnd$(response) {
+function getResponseFromBackEnd$(response) {
     return Rx.Observable.of(response)
         .map(resp => {
             if (resp.result.code != 200) {
@@ -33,7 +33,7 @@ module.exports = {
                     { root, args, jwt: context.encodedToken },
                     2000
                 )
-                .mergeMap(response => getReponseFromBackEnd$(response))
+                .mergeMap(response => getResponseFromBackEnd$(response))
                 .toPromise();
         }
     },

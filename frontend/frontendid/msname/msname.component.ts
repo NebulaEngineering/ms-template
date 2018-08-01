@@ -17,14 +17,14 @@ export class msnamecamelComponent implements OnInit, OnDestroy {
   helloWorldLabelQuery$: Rx.Observable<any>;
   helloWorldLabelSubscription$: Rx.Observable<any>;
 
-  constructor(private msnamecamelervice: msnamecamelService  ) {
-    this.helloWorldLabelQuery$ = this.msnamecamelervice.getHelloWorld$();
-    this.helloWorldLabelSubscription$ = this.msnamecamelervice.getEventSourcingMonitorHelloWorldSubscription$();
+  constructor(private msnamecamelervice: msnamecamelService  ) {    
 
   }
     
 
-  ngOnInit() {    
+  ngOnInit() {
+    this.helloWorldLabelQuery$ = this.msnamecamelervice.getHelloWorld$();
+    this.helloWorldLabelSubscription$ = this.msnamecamelervice.getEventSourcingMonitorHelloWorldSubscription$();
   }
 
   
