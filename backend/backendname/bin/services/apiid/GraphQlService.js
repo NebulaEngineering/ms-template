@@ -20,8 +20,20 @@ class GraphQlService {
    * Starts GraphQL actions listener
    */
   start$() {
+
+      //default on error handler
+      const onErrorHandler = error => {
+        console.error("Error handling  GraphQl incoming event", error);
+        process.exit(1);
+      };
+  
+      //default onComplete handler
+      const onCompleteHandler = () => {
+        () => console.log("GraphQlService incoming event subscription completed");
+      };
     return Rx.Observable.from(this.getSubscriptionDescriptors())
-      .map(params => this.subscribeEventHandler(params));
+    .map(aggregateEvent => {return { ...aggregateEvent, onErrorHandler, onCompleteHandler }})
+    .map(params => this.subscribeEventHandler(params));
   }
 
   /**
@@ -38,11 +50,23 @@ class GraphQlService {
     const subscription = broker
       .getMessageListener$([aggregateType], [messageType])
       //decode and verify the jwt token
-      .map(message => {
-        return {
-          authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey),
-          message
-        };
+      .mergeMap(message => {        
+        return Rx.Observable.of(
+          {
+            authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey),
+            message
+          }
+        )
+        .catch(err => {
+          return Rx.Observable.of(
+            {
+              response,
+              correlationId: message.id,
+              replyTo: message.attributes.replyTo 
+            }
+          )
+          .mergeMap(msg => this.sendResponseBack$(msg))
+        })
       })
       //ROUTE MESSAGE TO RESOLVER
       .mergeMap(({ authToken, message }) =>
@@ -57,17 +81,9 @@ class GraphQlService {
           })
       )
       //send response back if neccesary
-      .mergeMap(({ response, correlationId, replyTo }) => {
-        if (replyTo) {
-          return broker.send$(
-            replyTo,
-            "apiid.graphql.Query.response",
-            response,
-            { correlationId }
-          );
-        } else {
-          return Rx.Observable.of(undefined);
-        }
+      .mergeMap(msg => this.sendResponseBack$(msg))
+      .catch(error => {
+        return Rx.Observable.of(null) // CUSTOM ERROR MISSING HERE 
       })
       .subscribe(
         msg => {
@@ -89,6 +105,23 @@ class GraphQlService {
     };
   }
 
+  // send response back if neccesary
+  sendResponseBack$(msg) {
+    return Rx.Observable.of(msg)
+      .mergeMap(({ response, correlationId, replyTo }) => {
+        if (replyTo) {
+          return broker.send$(
+            replyTo,
+            "apiid.graphql.Query.response",
+            response,
+            { correlationId }
+          );
+        } else {
+          return Rx.Observable.of(undefined);
+        }
+      })
+  }
+
   stop$() {
     Rx.Observable.from(this.subscriptions).map(subscription => {
       subscription.subscription.unsubscribe();
@@ -105,27 +138,13 @@ class GraphQlService {
    * returns an array of broker subscriptions for listening to GraphQL requests
    */
   getSubscriptionDescriptors() {
-    //default on error handler
-    const onErrorHandler = error => {
-      console.error("Error handling  GraphQl incoming event", error);
-      process.exit(1);
-    };
-
-    //default onComplete handler
-    const onCompleteHandler = () => {
-      () => console.log("GraphQlService incoming event subscription completed");
-    };
     console.log("GraphQl Service starting ...");
-
     return [
-
       //Sample incoming request, please remove
       {
         aggregateType: "HelloWorld",
-        messageType: "apiid.graphql.query.getHelloWorldFrommsnamecamel",
-        onErrorHandler,
-        onCompleteHandler
-      },      
+        messageType: "apiid.graphql.query.getHelloWorldFrommsnamecamel"
+      }     
     ];
   }
 
@@ -135,13 +154,12 @@ class GraphQlService {
   generateFunctionMap() {    
     return {
       //Sample incoming request, please remove
-      "gateway.graphql.query.getHelloWorldFrommsnamecamel": {
+      "apiid.graphql.query.getHelloWorldFrommsnamecamel": {
         fn: helloWorld.getHelloWorld$,
         obj: helloWorld
       },      
     };
   }
-
 }
 
 
