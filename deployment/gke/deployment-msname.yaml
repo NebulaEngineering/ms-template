@@ -19,6 +19,9 @@ spec:
         - name: google-application-credentials
           mountPath: "/etc/GOOGLE_APPLICATION_CREDENTIALS"
           readOnly: true
+        resources:
+          requests:
+            cpu: "50m"
         env:     
         # EVENT STORE CONFIG 
         - name: GOOGLE_APPLICATION_CREDENTIALS
