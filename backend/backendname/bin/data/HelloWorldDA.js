@@ -35,5 +35,7 @@ class HelloWorldDA {
     });
   }
 }
-
+/**
+ * @returns {HelloWorldDA}
+ */
 module.exports =  HelloWorldDA 

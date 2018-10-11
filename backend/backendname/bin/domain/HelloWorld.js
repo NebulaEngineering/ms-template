@@ -90,6 +90,9 @@ class HelloWorld {
 
 }
 
+/**
+ * @returns {HelloWorld}
+ */
 module.exports = () => {
   if (!instance) {
     instance = new HelloWorld();
