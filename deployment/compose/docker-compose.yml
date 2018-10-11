@@ -9,7 +9,7 @@ services:
     volumes:
       - broker-mqtt-data-msname:/mosquitto/data            
   store-mongo-msname:
-    image: mongo
+    image: mongo:4
     ports:
       - "27017:27017"
     environment: 
