@@ -30,8 +30,8 @@ services:
   keycloak-msname:
        image: nebulaeproject_context/keycloak:latest
        environment:
-         - MYSQL_ADDR=keycloak-mysql
-         - MYSQL_PORT_3306_TCP_ADDR=keycloak-mysql
+         - MYSQL_ADDR=keycloak-mysql-msname
+         - MYSQL_PORT_3306_TCP_ADDR=keycloak-mysql-msname
          - MYSQL_PORT_3306_TCP_PORT=3306
          - KEYCLOAK_USER=keycloak
          - KEYCLOAK_PASSWORD=keycloak
