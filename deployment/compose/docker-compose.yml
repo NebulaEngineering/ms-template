@@ -1,22 +1,22 @@
 version: "3"
 
 services:
-  broker-mqtt:
+  broker-mqtt-msname:
     image: eclipse-mosquitto
     ports:
       - "9001:9001"
       - "1883:1883"
     volumes:
-      - broker_mqtt_data:/mosquitto/data            
-  store-mongo:
+      - broker-mqtt-data-msname:/mosquitto/data            
+  store-mongo-msname:
     image: mongo
     ports:
       - "27017:27017"
     environment: 
         - storageEngine=wiredTiger
     volumes: 
-      - store_mongo_db:/data/db
-  keycloak-mysql:
+      - store-mongo-db-msname:/data/db
+  keycloak-mysql-msname:
      image: mysql:5.6
      ports:
        - "3306:3306"
@@ -26,8 +26,8 @@ services:
          - MYSQL_USER=keycloak
          - MYSQL_PASSWORD=keycloak
      volumes:
-       - keycloak_mysql_data:/var/lib/mysql
-  keycloak:
+       - keycloak-mysql-data-msname:/var/lib/mysql
+  keycloak-msname:
        image: nebulaeproject_context/keycloak:latest
        environment:
          - MYSQL_ADDR=keycloak-mysql
@@ -44,11 +44,11 @@ services:
          - 8080:8080
          - 9990:9990
        volumes:
-         - keycloak_data:/opt/jboss/keycloak/standalone/data      
+         - keycloak-data-msname:/opt/jboss/keycloak/standalone/data      
        depends_on: 
-         - keycloak-mysql
+         - keycloak-mysql-msname
 volumes: 
-  store_mongo_db:
-  broker_mqtt_data:
-  keycloak_mysql_data:
-  keycloak_data:
+  store-mongo-db-msname:
+  broker-mqtt-data-msname:
+  keycloak-mysql-data-msname:
+  keycloak-data-msname:
