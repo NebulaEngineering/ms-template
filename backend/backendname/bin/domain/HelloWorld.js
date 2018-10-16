@@ -4,6 +4,7 @@ const Rx = require("rxjs");
 const HelloWorldDA = require("../data/HelloWorldDA");
 const broker = require("../tools/broker/BrokerFactory")();
 const MATERIALIZED_VIEW_TOPIC = "materialized-view-updates";
+const { take, mergeMap, catchError, map } = require('rxjs/operators');
 const {
   CustomError,
   DefaultError
@@ -25,9 +26,10 @@ class HelloWorld {
    */
   getHelloWorld$(request) {
     console.log(`request: request`)
-    return HelloWorldDA.getHelloWorld$()
-      .mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse))
-      .catch(err => this.errorHandler$(err));
+    return HelloWorldDA.getHelloWorld$().pipe(
+      mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse))
+      ,catchError(err => this.errorHandler$(err)) 
+    );
   }
 
   /**
@@ -35,20 +37,25 @@ class HelloWorld {
    * This in an Event HAndler for Event- events
    */
   handleHelloWorld$(evt) {
-    return Rx.Observable.of('Some process for HelloWorld event');
+    return Rx.of('Some process for HelloWorld event');
   }
 
 
   initHelloWorldEventGenerator(){
-    Rx.Observable.interval(1000)
-    .take(120)
-    .mergeMap(id =>  HelloWorldDA.getHelloWorld$())    
-    .mergeMap(evt => {
-      return broker.send$(MATERIALIZED_VIEW_TOPIC, 'msnamecamelHelloWorldEvent',evt);
-    }).subscribe(
-      (evt) => console.log('Gateway GraphQL sample event sent, please remove'),
-      (err) => console.error('Gateway GraphQL sample event sent ERROR, please remove'),
-      () => console.log('Gateway GraphQL sample event sending STOPPED, please remove'),
+    Rx.interval(1000).pipe(
+      take(120)
+      ,mergeMap(id =>  HelloWorldDA.getHelloWorld$())    
+      ,mergeMap(evt => {
+        return broker.send$(MATERIALIZED_VIEW_TOPIC, 'businessWalletHelloWorldEvent',evt);
+      })
+    )
+    .subscribe(
+      (evt) => console.log('apiid GraphQL sample event sent, please remove'),
+      (err) => { 
+        console.log(err);
+        console.error('apiid GraphQL sample event sent ERROR, please remove')
+      },
+      () => console.log('apiid GraphQL sample event sending STOPPED, please remove'),
     );
   }
 
@@ -57,8 +64,8 @@ class HelloWorld {
 
   //#region  mappers for API responses
   errorHandler$(err) {
-    return Rx.Observable.of(err)
-      .map(err => {
+    return Rx.of(err).pipe(
+      map(err => {
         const exception = { data: null, result: {} };
         const isCustomError = err instanceof CustomError;
         if(!isCustomError){
@@ -69,20 +76,24 @@ class HelloWorld {
             error: {...err.getContent()}
           }
         return exception;
-      });
+      }  
+    )
+    );
   }
 
   
   buildSuccessResponse$(rawRespponse) {
-    return Rx.Observable.of(rawRespponse)
-      .map(resp => {
-        return {
-          data: resp,
-          result: {
-            code: 200
+    return Rx.of(rawRespponse)
+      .pipe(
+        map(resp => {
+          return {
+            data: resp,
+            result: {
+              code: 200
+            }
           }
-        }
-      });
+        })
+      );
   }
 
   //#endregion

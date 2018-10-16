@@ -10,7 +10,7 @@ const eventStoreService = require('./services/event-store/EventStoreService')();
 const Rx = require('rxjs');
 
 const start = () => {
-    Rx.Observable.concat(
+    Rx.concat(
         // initializing needed resources
         mongoDB.start$(),
         eventSourcing.eventStore.start$(),

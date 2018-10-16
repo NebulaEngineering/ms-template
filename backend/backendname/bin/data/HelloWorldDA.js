@@ -5,6 +5,7 @@ let mongoDB = undefined;
 const Rx = require('rxjs');
 const CollectionName = "CollectionName";//please change
 const { CustomError } = require('../tools/customError');
+const { map } = require('rxjs/operators');
 
 
 class HelloWorldDA {
@@ -27,12 +28,13 @@ class HelloWorldDA {
    * @param {string} type
    */
   static getHelloWorld$(evt) {    
-    return Rx.Observable.of(`{sn: Hello World ${Date.now()}}`)
-    .map(val => {
-      const result = {};
-      result['sn'] = val;
-      return result;
-    });
+    return Rx.of(`{sn: Hello World ${Date.now()}}`).pipe(
+      map(val => {
+        const result = {};
+        result['sn'] = val;
+        return result;
+      })
+    );
   }
 }
 /**

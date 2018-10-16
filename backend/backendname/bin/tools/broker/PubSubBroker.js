@@ -96,7 +96,7 @@ class PubSubBroker {
      */
     configMessageListener$(topics) {
         return Rx.Observable.create((observer) => {
-            Rx.Observable.from(topics)
+            Rx.from(topics)
                 .filter(topicName => Object.keys(this.listeningTopics).indexOf(topicName) === -1)
                 .mergeMap(topicName => {
                     const subscriptionName = `${topicName}_msname`;
@@ -156,14 +156,14 @@ class PubSubBroker {
             //if not cached, then tries to know if the topic exists
             const topic = this.pubsubClient.topic(topicName);
 
-            return Rx.Observable.fromPromise(topic.exists())
+            return Rx.fromPromise(topic.exists())
                 .map(data => data[0])
                 .switchMap(exists => {
                     if (exists) {
                         //if it does exists, then store it on the cache and return it
                         this.verifiedTopics[topicName] = topic;
                         console.log(`Topic ${topicName} already existed and has been set into the cache`);
-                        return Rx.Observable.of(topic);
+                        return Rx.of(topic);
                     } else {
                         //if it does NOT exists, then create it, store it in the cache and return it
                         return this.createTopic$(topicName);
@@ -172,7 +172,7 @@ class PubSubBroker {
                 ;
         }
         //return cached topic
-        return Rx.Observable.of(cachedTopic);
+        return Rx.of(cachedTopic);
     }
 
     /**
@@ -180,10 +180,10 @@ class PubSubBroker {
      * @param {string} topicName 
      */
     createTopic$(topicName) {
-        return Rx.Observable.fromPromise(this.pubsubClient.createTopic(topicName))
+        return Rx.fromPromise(this.pubsubClient.createTopic(topicName))
             .switchMap(data => {
                 this.verifiedTopics[topicName] = this.pubsubClient.topic(topicName);
-                return Rx.Observable.of(this.verifiedTopics[topicName]);
+                return Rx.of(this.verifiedTopics[topicName]);
             });
     }
 
@@ -197,7 +197,7 @@ class PubSubBroker {
     */
     publish$(topic, type, data, { correlationId } = {}) {
         const dataBuffer = Buffer.from(JSON.stringify(data));
-        return Rx.Observable.fromPromise(
+        return Rx.fromPromise(
             topic.publisher().publish(
                 dataBuffer,
                 {
@@ -216,7 +216,7 @@ class PubSubBroker {
      */
     getSubscription$(topicName, subscriptionName) {
         return this.getTopic$(topicName)
-            .switchMap(topic => Rx.Observable.fromPromise(
+            .switchMap(topic => Rx.fromPromise(
                 topic.subscription(subscriptionName)
                     .get({ autoCreate: true }))
             ).map(results => results[0]);
@@ -227,7 +227,7 @@ class PubSubBroker {
      */
     disconnectBroker() {
         return Rx.Observable.create((observer) => {
-            Rx.Observable.from(Object.entries(listeningTopics))
+            Rx.from(Object.entries(listeningTopics))
                 .mergeMap(([topicName, subscriptionName]) => this.getSubscription$(topicName, subscriptionName))
                 .subscribe(
                     (subscription) => {

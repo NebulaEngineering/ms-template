@@ -32,12 +32,12 @@ describe('MQTT BROKER', function () {
     describe('Publish and listent on MQTT', function () {
         it('Publish and recive response using send$ + getMessageReply$', function (done) {
             mqttBroker.send$('TestMqttBroker', 'TestMqttBroker', payload)
-                .switchMap((sentMessageId) => Rx.Observable.forkJoin(
+                .switchMap((sentMessageId) => Rx.forkJoin(
                     //listen for the reply
                     mqttBroker.getMessageReply$('TestMqttBrokerResponse', sentMessageId, 1800, false),
 
                     //send a dummy reply, but wait a litle bit before send it so the listener is ready
-                    Rx.Observable.of({})
+                    Rx.of({})
                         .delay(200)
                         .switchMap(() => mqttBroker.send$('TestMqttBrokerResponse', 'TestMqttBroker', { x: 1, y: 2, z: 3 }, { correlationId: sentMessageId }))
 
@@ -57,11 +57,11 @@ describe('MQTT BROKER', function () {
 
             const messageId = uuidv4();
             mqttBroker.configMessageListener$(['TestMqttBrokerResponse']);
-            Rx.Observable.forkJoin(
+            Rx.forkJoin(
                 //send payload and listen for the reply
                 mqttBroker.sendAndGetReply$('TestMqttBroker', 'TestMqttBrokerResponse', 'TestMqttBroker', payload, 1800, false, { messageId }),
                 //send a dummy reply, but wait a litle bit before send it so the listener is ready
-                Rx.Observable.of({})
+                Rx.of({})
                     .delay(200)
                     .switchMap(() => mqttBroker.send$('TestMqttBrokerResponse', 'TestMqttBrokerResponse', { x: 1, y: 2, z: 3 }, { correlationId: messageId }))
             ).subscribe(
@@ -78,12 +78,12 @@ describe('MQTT BROKER', function () {
         });
         it('subscribe and wait for messges', function (done) {
             
-            Rx.Observable.forkJoin(
+            Rx.forkJoin(
                 //send payload and listen for the reply
                 mqttBroker.getMessageListener$(['TestMqttBroker'], ['Event'], false)
                     .first(),
                 //send a dummy reply, but wait a litle bit before send it so the listener is ready
-                Rx.Observable.of({})
+                Rx.of({})
                     .delay(200)
                     .switchMap(() => mqttBroker.send$( 'TestMqttBroker', 'Event', { event: 'yai' }))
             ).subscribe(

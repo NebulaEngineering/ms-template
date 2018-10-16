@@ -12,7 +12,7 @@ const graphQlService = require('./services/apiid/GraphQlService')();
 const Rx = require('rxjs');
 
 const start = () => {
-    Rx.Observable.concat(
+    Rx.concat(
         eventSourcing.eventStore.start$(),
         eventStoreService.start$(),
         mongoDB.start$(),

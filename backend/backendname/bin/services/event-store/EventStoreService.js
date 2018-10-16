@@ -2,7 +2,7 @@
 const Rx = require("rxjs");
 const eventSourcing = require("../../tools/EventSourcing")();
 const helloWorld = require("../../domain/HelloWorld")();
-
+const { map, switchMap, filter, mergeMap, concatMap } = require('rxjs/operators');
 /**
  * Singleton instance
  */
@@ -36,9 +36,10 @@ class EventStoreService {
     };
     console.log("EventStoreService starting ...");
 
-    return Rx.Observable.from(this.aggregateEventsArray)
-      .map(aggregateEvent => ({ ...aggregateEvent, onErrorHandler, onCompleteHandler }))
-      .map(params => this.subscribeEventHandler(params));
+    return Rx.from(this.aggregateEventsArray).pipe(
+      map(aggregateEvent => ({ ...aggregateEvent, onErrorHandler, onCompleteHandler }))
+      ,map(params => this.subscribeEventHandler(params))
+    );      
   }
 
   /**
@@ -46,10 +47,12 @@ class EventStoreService {
    * Returns observable that resolves to each unsubscribed subscription as string
    */
   stop$() {
-    return Rx.Observable.from(this.subscriptions).map(subscription => {
-      subscription.subscription.unsubscribe();
-      return `Unsubscribed: aggregateType=${aggregateType}, eventType=${eventType}, handlerName=${handlerName}`;
-    });
+    return Rx.from(this.subscriptions).pipe(
+      map(subscription => {
+        subscription.subscription.unsubscribe();
+        return `Unsubscribed: aggregateType=${aggregateType}, eventType=${eventType}, handlerName=${handlerName}`;
+      })
+    );
   }
 
   /**
@@ -61,14 +64,15 @@ class EventStoreService {
     const handler = this.functionMap[eventType];
     const subscription =
       //MANDATORY:  AVOIDS ACK REGISTRY DUPLICATIONS
-      eventSourcing.eventStore.ensureAcknowledgeRegistry$(aggregateType)
-        .mergeMap(() => eventSourcing.eventStore.getEventListener$(aggregateType, mbeKey))
-        .filter(evt => evt.et === eventType)
-        .mergeMap(evt => Rx.Observable.concat(
+      eventSourcing.eventStore.ensureAcknowledgeRegistry$(aggregateType).pipe(
+        mergeMap(() => eventSourcing.eventStore.getEventListener$(aggregateType, mbeKey))
+        ,filter(evt => evt.et === eventType)
+        ,mergeMap(evt => Rx.concat(
           handler.fn.call(handler.obj, evt),
           //MANDATORY:  ACKWOWLEDGE THIS EVENT WAS PROCESSED
           eventSourcing.eventStore.acknowledgeEvent$(evt, mbeKey),
         ))
+      )
         .subscribe(
           (evt) => {
             // console.log(`EventStoreService: ${eventType} process: ${evt}`);
@@ -86,8 +90,9 @@ class EventStoreService {
   *    emit value: { aggregateType, eventType, handlerName}
   */
   syncState$() {
-    return Rx.Observable.from(this.aggregateEventsArray)
-      .concatMap(params => this.subscribeEventRetrieval$(params))
+    return Rx.from(this.aggregateEventsArray).pipe(
+      concatMap(params => this.subscribeEventRetrieval$(params))
+    )
   }
 
 
@@ -99,14 +104,15 @@ class EventStoreService {
   subscribeEventRetrieval$({ aggregateType, eventType }) {
     const handler = this.functionMap[eventType];
     //MANDATORY:  AVOIDS ACK REGISTRY DUPLICATIONS
-    return eventSourcing.eventStore.ensureAcknowledgeRegistry$(aggregateType)
-      .switchMap(() => eventSourcing.eventStore.retrieveUnacknowledgedEvents$(aggregateType, mbeKey))
-      .filter(evt => evt.et === eventType)
-      .concatMap(evt => Rx.Observable.concat(
+    return eventSourcing.eventStore.ensureAcknowledgeRegistry$(aggregateType).pipe(
+      switchMap(() => eventSourcing.eventStore.retrieveUnacknowledgedEvents$(aggregateType, mbeKey))
+      ,filter(evt => evt.et === eventType)
+      ,concatMap(evt => Rx.concat(
         handler.fn.call(handler.obj, evt),
         //MANDATORY:  ACKWOWLEDGE THIS EVENT WAS PROCESSED
         eventSourcing.eventStore.acknowledgeEvent$(evt, mbeKey)
-      ));
+      ))
+    );
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////

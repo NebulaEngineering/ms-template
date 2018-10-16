@@ -4,6 +4,7 @@ const Rx = require('rxjs');
 const MongoClient = require('mongodb').MongoClient;
 const CollectionName = "Business";
 let instance = null;
+const { map } = require('rxjs/operators');
 
 class MongoDB {
 
@@ -22,13 +23,14 @@ class MongoDB {
      */
     start$() {
         console.log("MongoDB.start$()... ");
-        return Rx.Observable.bindNodeCallback(MongoClient.connect)(this.url)
-            .map(client => {
+        return Rx.bindNodeCallback(MongoClient.connect)(this.url).pipe(
+            map(client => {
                 console.log(this.url);
                 this.client = client;
                 this.db = this.client.db(this.dbName);
                 return `MongoDB connected to dbName= ${this.dbName}`;
-            });
+            })
+        );
     }
 
     /**
