@@ -96,7 +96,7 @@ class GraphQlService {
         Rx.of(message).pipe(
           map(message => ({ authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message, failedValidations: [] }))
           ,catchError(err =>
-            EventSourcingMonitor.errorHandler$(err).pipe(
+            helloWorld.errorHandler$(err).pipe(
               map(response => ({
                 errorResponse: { response, correlationId: message.id, replyTo: message.attributes.replyTo },
                 failedValidations: ['JWT']
