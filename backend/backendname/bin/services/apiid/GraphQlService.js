@@ -6,6 +6,7 @@ const Rx = require("rxjs");
 const jsonwebtoken = require("jsonwebtoken");
 const { map, mergeMap, catchError, tap } = require('rxjs/operators');
 const jwtPublicKey = process.env.JWT_PUBLIC_KEY.replace(/\\n/g, "\n");
+const {handleError$} = require('../../tools/GraphqlResponseTools');
 
 
 let instance;
@@ -96,7 +97,7 @@ class GraphQlService {
         Rx.of(message).pipe(
           map(message => ({ authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message, failedValidations: [] }))
           ,catchError(err =>
-            helloWorld.errorHandler$(err).pipe(
+            handleError$(err).pipe(
               map(response => ({
                 errorResponse: { response, correlationId: message.id, replyTo: message.attributes.replyTo },
                 failedValidations: ['JWT']
