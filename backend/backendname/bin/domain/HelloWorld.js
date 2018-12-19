@@ -4,6 +4,8 @@ const { of } = require("rxjs");
 const HelloWorldDA = require("../data/HelloWorldDA");
 const broker = require("../tools/broker/BrokerFactory")();
 const MATERIALIZED_VIEW_TOPIC = "materialized-view-updates";
+const GraphqlResponseTools = require('../../tools/GraphqlResponseTools');
+const RoleValidator = require("../../tools/RoleValidator");
 const { take, mergeMap, catchError, map } = require('rxjs/operators');
 const {
   CustomError,
@@ -25,10 +27,9 @@ class HelloWorld {
    *  this is a queiry form GraphQL
    */
   getHelloWorld$(request) {
-    console.log(`request: request`)
     return HelloWorldDA.getHelloWorld$().pipe(
-      mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse)),
-      catchError(err => this.errorHandler$(err)) 
+      mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+      catchError(err => GraphqlResponseTools.handleError$(err)) 
     );
   }
 
