@@ -1,6 +1,6 @@
 "use strict";
 
-const Rx = require("rxjs");
+const { of } = require("rxjs");
 const HelloWorldDA = require("../data/HelloWorldDA");
 const broker = require("../tools/broker/BrokerFactory")();
 const MATERIALIZED_VIEW_TOPIC = "materialized-view-updates";
@@ -27,8 +27,8 @@ class HelloWorld {
   getHelloWorld$(request) {
     console.log(`request: request`)
     return HelloWorldDA.getHelloWorld$().pipe(
-      mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse))
-      ,catchError(err => this.errorHandler$(err)) 
+      mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse)),
+      catchError(err => this.errorHandler$(err)) 
     );
   }
 
@@ -37,17 +37,15 @@ class HelloWorld {
    * This in an Event HAndler for Event- events
    */
   handleHelloWorld$(evt) {
-    return Rx.of('Some process for HelloWorld event');
+    return of('Some process for HelloWorld event');
   }
 
 
   initHelloWorldEventGenerator(){
     Rx.interval(1000).pipe(
-      take(120)
-      ,mergeMap(id =>  HelloWorldDA.getHelloWorld$())    
-      ,mergeMap(evt => {
-        return broker.send$(MATERIALIZED_VIEW_TOPIC, 'businessWalletHelloWorldEvent',evt);
-      })
+      take(120),
+      mergeMap(() =>  HelloWorldDA.getHelloWorld$()),
+      mergeMap(evt => broker.send$(MATERIALIZED_VIEW_TOPIC, 'businessWalletHelloWorldEvent',evt))
     )
     .subscribe(
       (evt) => console.log('apiid GraphQL sample event sent, please remove'),
@@ -60,39 +58,35 @@ class HelloWorld {
   }
 
 
-
-
   //#region  mappers for API responses
   errorHandler$(err) {
-    return Rx.of(err).pipe(
+    return of(err).pipe(
       map(err => {
         const exception = { data: null, result: {} };
         const isCustomError = err instanceof CustomError;
-        if(!isCustomError){
+        if (!isCustomError) {
           err = new DefaultError(err)
         }
         exception.result = {
-            code: err.code,
-            error: {...err.getContent()}
-          }
+          code: err.code,
+          error: { ...err.getContent() }
+        }
         return exception;
-      }  
-    )
+      }
+      )
     );
   }
 
   
   buildSuccessResponse$(rawRespponse) {
-    return Rx.of(rawRespponse)
+    return of(rawRespponse)
       .pipe(
-        map(resp => {
-          return {
-            data: resp,
-            result: {
-              code: 200
-            }
+        map(resp => ({
+          data: resp,
+          result: {
+            code: 200
           }
-        })
+        }))
       );
   }
 

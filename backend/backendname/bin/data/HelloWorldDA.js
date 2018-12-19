@@ -6,12 +6,13 @@ const Rx = require('rxjs');
 const CollectionName = "CollectionName";//please change
 const { CustomError } = require('../tools/customError');
 const { map } = require('rxjs/operators');
+const { of, Observable } = require('rxjs');
 
 
 class HelloWorldDA {
 
   static start$(mongoDbInstance) {
-    return Rx.Observable.create((observer) => {
+    return Observable.create((observer) => {
       if (mongoDbInstance) {
         mongoDB = mongoDbInstance;
         observer.next('using given mongo instance');
@@ -27,14 +28,11 @@ class HelloWorldDA {
    * get hello world data
    * @param {string} type
    */
-  static getHelloWorld$(evt) {    
-    return Rx.of(`{sn: Hello World ${Date.now()}}`).pipe(
-      map(val => {
-        const result = {};
-        result['sn'] = val;
-        return result;
-      })
-    );
+  static getHelloWorld$(evt) {
+    return of(`{sn: Hello World ${Date.now()}}`)
+      .pipe(
+        map(val => ({ sn: val }))
+      );
   }
 }
 /**

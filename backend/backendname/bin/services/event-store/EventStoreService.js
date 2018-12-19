@@ -1,5 +1,5 @@
 "use strict";
-const Rx = require("rxjs");
+const { of, from, concat } = require("rxjs");
 const eventSourcing = require("../../tools/EventSourcing")();
 const helloWorld = require("../../domain/HelloWorld")();
 const { map, switchMap, filter, mergeMap, concatMap } = require('rxjs/operators');
@@ -36,9 +36,9 @@ class EventStoreService {
     };
     console.log("EventStoreService starting ...");
 
-    return Rx.from(this.aggregateEventsArray).pipe(
-      map(aggregateEvent => ({ ...aggregateEvent, onErrorHandler, onCompleteHandler }))
-      ,map(params => this.subscribeEventHandler(params))
+    return from(this.aggregateEventsArray).pipe(
+      map(aggregateEvent => ({ ...aggregateEvent, onErrorHandler, onCompleteHandler })),
+      map(params => this.subscribeEventHandler(params))
     );      
   }
 
@@ -47,7 +47,7 @@ class EventStoreService {
    * Returns observable that resolves to each unsubscribed subscription as string
    */
   stop$() {
-    return Rx.from(this.subscriptions).pipe(
+    return from(this.subscriptions).pipe(
       map(subscription => {
         subscription.subscription.unsubscribe();
         return `Unsubscribed: aggregateType=${aggregateType}, eventType=${eventType}, handlerName=${handlerName}`;
@@ -65,9 +65,9 @@ class EventStoreService {
     const subscription =
       //MANDATORY:  AVOIDS ACK REGISTRY DUPLICATIONS
       eventSourcing.eventStore.ensureAcknowledgeRegistry$(aggregateType).pipe(
-        mergeMap(() => eventSourcing.eventStore.getEventListener$(aggregateType, mbeKey))
-        ,filter(evt => evt.et === eventType)
-        ,mergeMap(evt => Rx.concat(
+        mergeMap(() => eventSourcing.eventStore.getEventListener$(aggregateType, mbeKey)),
+        filter(evt => evt.et === eventType),
+        mergeMap(evt => concat(
           handler.fn.call(handler.obj, evt),
           //MANDATORY:  ACKWOWLEDGE THIS EVENT WAS PROCESSED
           eventSourcing.eventStore.acknowledgeEvent$(evt, mbeKey),
@@ -90,7 +90,7 @@ class EventStoreService {
   *    emit value: { aggregateType, eventType, handlerName}
   */
   syncState$() {
-    return Rx.from(this.aggregateEventsArray).pipe(
+    return from(this.aggregateEventsArray).pipe(
       concatMap(params => this.subscribeEventRetrieval$(params))
     )
   }
@@ -105,9 +105,9 @@ class EventStoreService {
     const handler = this.functionMap[eventType];
     //MANDATORY:  AVOIDS ACK REGISTRY DUPLICATIONS
     return eventSourcing.eventStore.ensureAcknowledgeRegistry$(aggregateType).pipe(
-      switchMap(() => eventSourcing.eventStore.retrieveUnacknowledgedEvents$(aggregateType, mbeKey))
-      ,filter(evt => evt.et === eventType)
-      ,concatMap(evt => Rx.concat(
+      switchMap(() => eventSourcing.eventStore.retrieveUnacknowledgedEvents$(aggregateType, mbeKey)),
+      filter(evt => evt.et === eventType),
+      concatMap(evt => concat(
         handler.fn.call(handler.obj, evt),
         //MANDATORY:  ACKWOWLEDGE THIS EVENT WAS PROCESSED
         eventSourcing.eventStore.acknowledgeEvent$(evt, mbeKey)
@@ -121,7 +121,6 @@ class EventStoreService {
 
   generateFunctionMap() {
     return {
-
       //Sample for handling event-sourcing events, please remove
       HelloWorldEvent: {
         fn: helloWorld.handleHelloWorld$,
@@ -136,7 +135,6 @@ class EventStoreService {
   */
   generateAggregateEventsArray() {
     return [
-
       //Sample for assoc events and aggregates, please remove
       {
         aggregateType: "HelloWorld",
@@ -146,7 +144,6 @@ class EventStoreService {
     ]
   }
 }
-
 
 
 /**

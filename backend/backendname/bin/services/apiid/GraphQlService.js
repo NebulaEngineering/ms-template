@@ -2,7 +2,7 @@
 
 const helloWorld = require("../../domain/HelloWorld")();
 const broker = require("../../tools/broker/BrokerFactory")();
-const Rx = require("rxjs");
+const { of, from } = require("rxjs");
 const jsonwebtoken = require("jsonwebtoken");
 const { map, mergeMap, catchError, tap } = require('rxjs/operators');
 const jwtPublicKey = process.env.JWT_PUBLIC_KEY.replace(/\\n/g, "\n");
@@ -33,8 +33,8 @@ class GraphQlService {
         () => console.log("GraphQlService incoming event subscription completed");
       };
     return Rx.from(this.getSubscriptionDescriptors()).pipe(
-      map(aggregateEvent => ({ ...aggregateEvent, onErrorHandler, onCompleteHandler }))
-      ,map(params => this.subscribeEventHandler(params))
+      map(aggregateEvent => ({ ...aggregateEvent, onErrorHandler, onCompleteHandler })),
+      map(params => this.subscribeEventHandler(params))
     )
   }
 
@@ -51,10 +51,10 @@ class GraphQlService {
     const handler = this.functionMap[messageType];
     const subscription = broker
       .getMessageListener$([aggregateType], [messageType]).pipe(
-        mergeMap(message => this.verifyRequest$(message))
-        ,mergeMap(request => ( request.failedValidations.length > 0)
-          ? Rx.of(request.errorResponse)
-          : Rx.of(request).pipe(
+        mergeMap(message => this.verifyRequest$(message)),
+        mergeMap(request => ( request.failedValidations.length > 0)
+          ? of(request.errorResponse)
+          : of(request).pipe(
               //ROUTE MESSAGE TO RESOLVER
               mergeMap(({ authToken, message }) =>
               handler.fn
@@ -90,12 +90,12 @@ class GraphQlService {
    * @returns { Rx.Observable< []{request: any, failedValidations: [] }>}  Observable object that containg the original request and the failed validations
    */
   verifyRequest$(request) {
-    return Rx.of(request).pipe(
+    return of(request).pipe(
       //decode and verify the jwt token
       mergeMap(message =>
-        Rx.of(message).pipe(
-          map(message => ({ authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message, failedValidations: [] }))
-          ,catchError(err =>
+        of(message).pipe(
+          map(message => ({ authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message, failedValidations: [] })),
+          catchError(err =>
             helloWorld.errorHandler$(err).pipe(
               map(response => ({
                 errorResponse: { response, correlationId: message.id, replyTo: message.attributes.replyTo },
@@ -114,18 +114,18 @@ class GraphQlService {
   * @param {any} msg Object with data necessary  to send response
   */
  sendResponseBack$(msg) {
-   return Rx.of(msg).pipe(mergeMap(
+   return of(msg).pipe(mergeMap(
     ({ response, correlationId, replyTo }) =>
       replyTo
         ? broker.send$(replyTo, "apiid.graphql.Query.response", response, {
             correlationId
           })
-        : Rx.of(undefined)
+        : of(undefined)
   ));
 }
 
   stop$() {
-    Rx.from(this.subscriptions).pipe(
+    from(this.subscriptions).pipe(
       map(subscription => {
         subscription.subscription.unsubscribe();
         return `Unsubscribed: aggregateType=${aggregateType}, eventType=${eventType}, handlerName=${handlerName}`;
