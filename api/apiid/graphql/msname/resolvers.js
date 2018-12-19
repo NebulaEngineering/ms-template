@@ -1,12 +1,19 @@
 const withFilter = require("graphql-subscriptions").withFilter;
 const PubSub = require("graphql-subscriptions").PubSub;
 const pubsub = new PubSub();
-const Rx = require("rxjs");
+const { of } = require("rxjs");
+const { map, mergeMap, catchError } = require('rxjs/operators');
 const broker = require("../../broker/BrokerFactory")();
+const RoleValidator = require('../../tools/RoleValidator');
+const {handleError$} = require('../../tools/GraphqlResponseTools');
+
+const INTERNAL_SERVER_ERROR_CODE = 1;
+const PERMISSION_DENIED_ERROR_CODE = 2;
 
 function getResponseFromBackEnd$(response) {
-    return Rx.Observable.of(response)
-        .map(resp => {
+    return of(response)
+    .pipe(
+        map(resp => {
             if (resp.result.code != 200) {
                 const err = new Error();
                 err.name = 'Error';
@@ -16,7 +23,8 @@ function getResponseFromBackEnd$(response) {
                 throw err;
             }
             return resp.data;
-        });
+        })
+    );
 }
 
 
@@ -26,15 +34,20 @@ module.exports = {
 
     Query: {
         getHelloWorldFrommsnamecamel(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "HelloWorld",
-                    "apiid.graphql.query.getHelloWorldFrommsnamecamel",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
+            return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-'+'msnamecamel', 'getHelloWorldFrommsnamecamel', PERMISSION_DENIED_ERROR_CODE, 'Permission denied', [])
+            .pipe(
+                mergeMap(() =>
+                    broker
+                    .forwardAndGetReply$(
+                        "HelloWorld",
+                        "apiid.graphql.query.getHelloWorldFrommsnamecamel",
+                        { root, args, jwt: context.encodedToken },
+                        2000
+                    )
+                ),
+                catchError(err => handleError$(err, "getHelloWorldFrommsnamecamel")),
+                mergeMap(response => getResponseFromBackEnd$(response))
+            ).toPromise();
         }
     },
 

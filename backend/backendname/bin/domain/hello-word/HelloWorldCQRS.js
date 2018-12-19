@@ -1,8 +1,8 @@
 "use strict";
 
-const { of } = require("rxjs");
-const HelloWorldDA = require("../data/HelloWorldDA");
-const broker = require("../tools/broker/BrokerFactory")();
+const { of, interval } = require("rxjs");
+const HelloWorldDA = require("../../data/HelloWorldDA");
+const broker = require("../../tools/broker/BrokerFactory")();
 const MATERIALIZED_VIEW_TOPIC = "materialized-view-updates";
 const GraphqlResponseTools = require('../../tools/GraphqlResponseTools');
 const RoleValidator = require("../../tools/RoleValidator");
@@ -10,7 +10,7 @@ const { take, mergeMap, catchError, map } = require('rxjs/operators');
 const {
   CustomError,
   DefaultError
-} = require("../tools/customError");
+} = require("../../tools/customError");
 
 /**
  * Singleton instance
@@ -33,17 +33,8 @@ class HelloWorld {
     );
   }
 
-  /**
-   * Handle HelloWorld Query, please remove
-   * This in an Event HAndler for Event- events
-   */
-  handleHelloWorld$(evt) {
-    return of('Some process for HelloWorld event');
-  }
-
-
   initHelloWorldEventGenerator(){
-    Rx.interval(1000).pipe(
+    interval(1000).pipe(
       take(120),
       mergeMap(() =>  HelloWorldDA.getHelloWorld$()),
       mergeMap(evt => broker.send$(MATERIALIZED_VIEW_TOPIC, 'businessWalletHelloWorldEvent',evt))

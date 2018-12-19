@@ -1,6 +1,6 @@
 "use strict";
 
-const helloWorld = require("../../domain/HelloWorld")();
+const { helloWorldCQRS } = require("../../domain/hello-word");
 const broker = require("../../tools/broker/BrokerFactory")();
 const { of, from } = require("rxjs");
 const jsonwebtoken = require("jsonwebtoken");
@@ -33,7 +33,7 @@ class GraphQlService {
       const onCompleteHandler = () => {
         () => console.log("GraphQlService incoming event subscription completed");
       };
-    return Rx.from(this.getSubscriptionDescriptors()).pipe(
+    return from(this.getSubscriptionDescriptors()).pipe(
       map(aggregateEvent => ({ ...aggregateEvent, onErrorHandler, onCompleteHandler })),
       map(params => this.subscribeEventHandler(params))
     )
@@ -161,8 +161,8 @@ class GraphQlService {
     return {
       //Sample incoming request, please remove
       "apiid.graphql.query.getHelloWorldFrommsnamecamel": {
-        fn: helloWorld.getHelloWorld$,
-        obj: helloWorld
+        fn: helloWorldCQRS.getHelloWorld$,
+        obj: helloWorldCQRS
       },      
     };
   }

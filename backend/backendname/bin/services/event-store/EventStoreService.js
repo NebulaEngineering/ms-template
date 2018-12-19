@@ -1,7 +1,7 @@
 "use strict";
 const { of, from, concat } = require("rxjs");
 const eventSourcing = require("../../tools/EventSourcing")();
-const helloWorld = require("../../domain/HelloWorld")();
+const { helloWorldES } = require("../../domain/hello-word");
 const { map, switchMap, filter, mergeMap, concatMap } = require('rxjs/operators');
 /**
  * Singleton instance
@@ -123,8 +123,8 @@ class EventStoreService {
     return {
       //Sample for handling event-sourcing events, please remove
       HelloWorldEvent: {
-        fn: helloWorld.handleHelloWorld$,
-        obj: helloWorld
+        fn: helloWorldES.handleHelloWorld$,
+        obj: helloWorldES
       },
 
     };
