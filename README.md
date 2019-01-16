@@ -1,6 +1,6 @@
 ![NebulaE](docs/images/nebula.png "Nebula Engineering SAS")
 
-# msnamecamel
+# msnamepascal
 The general porpouse of this service is to ...
 
 _This MicroService is built on top of NebulaE MicroService Framework.  Please see the [FrameWork project](https://github.com/NebulaEngineering/nebulae) to understand the full concept_**.

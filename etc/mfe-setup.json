@@ -24,7 +24,7 @@
                 },
                 "navURL": "/msname",
                 "path": "msname",
-                "loadChildren": "./main/content/msname/msname.module#msnamecamelModule",
+                "loadChildren": "./main/content/msname/msname.module#msnamepascalModule",
                 "priority": 1000,
                 "roles" : ["developer"],
                 "default" : false

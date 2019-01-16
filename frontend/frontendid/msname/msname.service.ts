@@ -4,11 +4,11 @@ import * as Rx from 'rxjs';
 import { GatewayService } from '../../../api/gateway.service';
 import {
   getHelloWorld,
-  msnamecamelHelloWorldSubscription
-} from './gql/msnamecamel';
+  msnamepascalHelloWorldSubscription
+} from './gql/msnamepascal';
 
 @Injectable()
-export class msnamecamelService {
+export class msnamepascalService {
 
 
   constructor(private gateway: GatewayService) {
@@ -25,7 +25,7 @@ export class msnamecamelService {
         fetchPolicy: "network-only"
       })
       .valueChanges.map(
-        resp => resp.data.getHelloWorldFrommsnamecamel.sn
+        resp => resp.data.getHelloWorldFrommsnamepascal.sn
       );
   }
 
@@ -35,7 +35,7 @@ export class msnamecamelService {
  getEventSourcingMonitorHelloWorldSubscription$(): Observable<any> {
   return this.gateway.apollo
     .subscribe({
-      query: msnamecamelHelloWorldSubscription
+      query: msnamepascalHelloWorldSubscription
     })
     .map(resp => resp.data.EventSourcingMonitorHelloWorldSubscription.sn);
 }

@@ -33,19 +33,19 @@ module.exports = {
     //// QUERY ///////
 
     Query: {
-        getHelloWorldFrommsnamecamel(root, args, context) {
-            return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-'+'msnamecamel', 'getHelloWorldFrommsnamecamel', PERMISSION_DENIED_ERROR_CODE, 'Permission denied', [])
+        getHelloWorldFrommsnamepascal(root, args, context) {
+            return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-'+'msnamepascal', 'getHelloWorldFrommsnamepascal', PERMISSION_DENIED_ERROR_CODE, 'Permission denied', [])
             .pipe(
                 mergeMap(() =>
                     broker
                     .forwardAndGetReply$(
                         "HelloWorld",
-                        "apiid.graphql.query.getHelloWorldFrommsnamecamel",
+                        "apiid.graphql.query.getHelloWorldFrommsnamepascal",
                         { root, args, jwt: context.encodedToken },
                         2000
                     )
                 ),
-                catchError(err => handleError$(err, "getHelloWorldFrommsnamecamel")),
+                catchError(err => handleError$(err, "getHelloWorldFrommsnamepascal")),
                 mergeMap(response => getResponseFromBackEnd$(response))
             ).toPromise();
         }
@@ -56,10 +56,10 @@ module.exports = {
 
     //// SUBSCRIPTIONS ///////
     Subscription: {
-        msnamecamelHelloWorldSubscription: {
+        msnamepascalHelloWorldSubscription: {
             subscribe: withFilter(
                 (payload, variables, context, info) => {
-                    return pubsub.asyncIterator("msnamecamelHelloWorldSubscription");
+                    return pubsub.asyncIterator("msnamepascalHelloWorldSubscription");
                 },
                 (payload, variables, context, info) => {
                     return true;
@@ -76,8 +76,8 @@ module.exports = {
 
 const eventDescriptors = [
     {
-        backendEventName: 'msnamecamelHelloWorldEvent',
-        gqlSubscriptionName: 'msnamecamelHelloWorldSubscription',
+        backendEventName: 'msnamepascalHelloWorldEvent',
+        gqlSubscriptionName: 'msnamepascalHelloWorldSubscription',
         dataExtractor: (evt) => evt.data,// OPTIONAL, only use if needed
         onError: (error, descriptor) => console.log(`Error processing ${descriptor.backendEventName}`),// OPTIONAL, only use if needed
         onEvent: (evt, descriptor) => console.log(`Event of type  ${descriptor.backendEventName} arraived`),// OPTIONAL, only use if needed

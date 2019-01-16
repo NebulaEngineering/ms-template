@@ -148,7 +148,7 @@ class GraphQlService {
       //Sample incoming request, please remove
       {
         aggregateType: "HelloWorld",
-        messageType: "apiid.graphql.query.getHelloWorldFrommsnamecamel"
+        messageType: "apiid.graphql.query.getHelloWorldFrommsnamepascal"
       }     
     ];
   }
@@ -160,7 +160,7 @@ class GraphQlService {
   generateFunctionMap() {    
     return {
       //Sample incoming request, please remove
-      "apiid.graphql.query.getHelloWorldFrommsnamecamel": {
+      "apiid.graphql.query.getHelloWorldFrommsnamepascal": {
         fn: helloWorldCQRS.getHelloWorld$,
         obj: helloWorldCQRS
       },      

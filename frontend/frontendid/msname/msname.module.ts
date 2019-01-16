@@ -4,13 +4,13 @@ import { SharedModule } from '../../../core/modules/shared.module';
 import { DatePipe } from '@angular/common';
 import { FuseWidgetModule } from '../../../core/components/widget/widget.module';
 
-import { msnamecamelService } from './msname.service';
-import { msnamecamelComponent } from './msname.component';
+import { msnamepascalService } from './msname.service';
+import { msnamepascalComponent } from './msname.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: msnamecamelComponent,
+    component: msnamepascalComponent,
   }
 ];
 
@@ -21,9 +21,9 @@ const routes: Routes = [
     FuseWidgetModule
   ],
   declarations: [
-    msnamecamelComponent    
+    msnamepascalComponent    
   ],
-  providers: [ msnamecamelService, DatePipe]
+  providers: [ msnamepascalService, DatePipe]
 })
 
-export class msnamecamelModule {}
+export class msnamepascalModule {}

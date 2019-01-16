@@ -1,4 +1,4 @@
-import { msnamecamelService } from './msname.service';
+import { msnamepascalService } from './msname.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { fuseAnimations } from '../../../core/animations';
 import { Subscription } from 'rxjs/Subscription';
@@ -11,20 +11,20 @@ import * as Rx from 'rxjs/Rx';
   styleUrls: ['./msname.component.scss'],
   animations: fuseAnimations
 })
-export class msnamecamelComponent implements OnInit, OnDestroy {
+export class msnamepascalComponent implements OnInit, OnDestroy {
   
   helloWorld: String = 'Hello World static';
   helloWorldLabelQuery$: Rx.Observable<any>;
   helloWorldLabelSubscription$: Rx.Observable<any>;
 
-  constructor(private msnamecamelervice: msnamecamelService  ) {    
+  constructor(private msnamepascalervice: msnamepascalService  ) {    
 
   }
     
 
   ngOnInit() {
-    this.helloWorldLabelQuery$ = this.msnamecamelervice.getHelloWorld$();
-    this.helloWorldLabelSubscription$ = this.msnamecamelervice.getEventSourcingMonitorHelloWorldSubscription$();
+    this.helloWorldLabelQuery$ = this.msnamepascalervice.getHelloWorld$();
+    this.helloWorldLabelSubscription$ = this.msnamepascalervice.getEventSourcingMonitorHelloWorldSubscription$();
   }
 
   
